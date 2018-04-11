@@ -1,57 +1,61 @@
-/* C++ program for estimation of Pi using Monte
-Carlo Simulation */
-#include <bits/stdc++.h>
+#include <stdio.h>
 
-// Defines precision for x and y values. More the
-// interval, more the number of significant digits
-#define INTER 20
-using namespace std;
+#include <pthread.h>
+#include <stdlib.h>
 
-int main()
-{
-	int interval, i;
-	double ra_x, ra_y, origin, pi;
-	int circle_points = 0, square_points = 0;
+#include <time.h>
+long long point_thread;
+long long circle_points = 0;
 
-	// Initializing rand()
-	srand(time(NULL));
+pthread_mutex_t l;
 
-	// Total Random numbers generated = possible x
-	// values * possible y values
-	for (i = 0; i < (INTER * INTER); i++) {
+void *fun() {
 
-		// Randomly generated x and y values
-		ra_x = double(rand() % (INTER + 1)) / INTER;
-		ra_y = double(rand() % (INTER + 1)) / INTER;
+	pthread_mutex_lock(&l);
 
-		// Distance between (x, y) from the origin
-		origin = ra_x * ra_x + ra_y * ra_y;
+	long circle_points_thread = 0;
+		  srand((unsigned)time(NULL));
 
-		// Checking if (x, y) lies inside the define
-		// circle with R=1
-		if (origin <= 1)
-			circle_points++;
+	unsigned int rand_state = rand();
 
-		// Total number of points generated
-		square_points++;
+        int i;
+   	for (i = 0; i < point_thread; i++) {
 
-		// estimated pi after this iteration
-		pi = double(4 * circle_points) / square_points;
+        double x = rand_r(&rand_state) / ((double)RAND_MAX + 1) * 2.0 - 1.0;
+        double y = rand_r(&rand_state) / ((double)RAND_MAX + 1) * 2.0 - 1.0;
 
-		// For visual understanding (Optional)
-		cout << "Value of pi after "<<i<<"iteration "<< pi << endl<<endl ;
-
-		// Pausing estimation for first 10 values (Optional)
-		if (i < 10)
-		{
-			cout<<"Press Enter for next iteration  "<<endl<<endl;
-			getchar();
-	    }
-	}
-
-	// Final Estimated Value
-	cout << "\nFinal value of pi after "<<INTER*INTER<<" interval :" << pi;
-
-	return 0;
+        if (x * x + y * y < 1) {
+            circle_points_thread++;
+        }
+    }
+    
+    circle_points += circle_points_thread;
+    pthread_mutex_unlock(&l);
 }
 
+int main(int argc, const char *argv[])
+{
+
+ int i;
+ pthread_mutex_init(&l,NULL);
+    long totalpoints = atol(argv[1]);
+    int thread_count = atoi(argv[2]);
+    point_thread = totalpoints / thread_count;
+
+
+    pthread_t *threads = malloc(thread_count * sizeof(pthread_t));
+   
+    for (i = 0; i < thread_count; i++) {
+        pthread_create(&threads[i], NULL, fun, (void *) NULL);
+    }
+
+    for (i = 0; i < thread_count; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    pthread_mutex_destroy(&l);
+
+    printf("Estimated value of pi is %f\n", (4* (double)circle_points) / ((double)point_thread * thread_count));
+
+    return 0;
+}
