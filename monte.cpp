@@ -55,7 +55,7 @@ int main(int argc, const char *argv[])
 
     pthread_mutex_destroy(&l);
 
-    printf("Estimated value of pi is %f\n", (4* (double)circle_points) / ((double)point_thread * thread_count));
+    printf("Approximate value of pi is %f\n", (4* (double)circle_points) / ((double)point_thread * thread_count));
 
     return 0;
 }
