@@ -13,7 +13,7 @@ void *runner() {
 	pthread_mutex_lock(&l);
 
 	long incircle_thread = 0;
-		  srand((unsigned)time(NULL));
+		//  srand((unsigned)time(NULL));
 
 	unsigned int rand_state = rand();
 
