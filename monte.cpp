@@ -4,15 +4,15 @@
 
 #include <time.h>
 long long points_per_thread;
-long long incircle = 0;
+long long inside_circle = 0;
 
 pthread_mutex_t l;
 
-void *runner() {
+void *fun() {
 
 	pthread_mutex_lock(&l);
 
-	long incircle_thread = 0;
+	long inside_circle_thread = 0;
 		//  srand((unsigned)time(NULL));
 
 	unsigned int rand_state = rand();
@@ -24,11 +24,11 @@ void *runner() {
         double y = rand_r(&rand_state) / ((double)RAND_MAX + 1) * 2.0 - 1.0;
 
         if (x * x + y * y < 1) {
-            incircle_thread++;
+            inside_circle_thread++;
         }
     }
     
-    incircle += incircle_thread;
+    inside_circle += inside_circle_thread;
     pthread_mutex_unlock(&l);
 }
 
@@ -45,7 +45,7 @@ int main(int argc, const char *argv[])
     pthread_t *threads = malloc(thread_count * sizeof(pthread_t));
    
     for (i = 0; i < thread_count; i++) {
-        pthread_create(&threads[i], NULL, runner, (void *) NULL);
+        pthread_create(&threads[i], NULL, fun, (void *) NULL);
     }
 
     for (i = 0; i < thread_count; i++) {
@@ -54,7 +54,7 @@ int main(int argc, const char *argv[])
 
     pthread_mutex_destroy(&l);
 
-    printf("Estimated value of pi is %f\n", (4* (double)incircle) / ((double)points_per_thread * thread_count));
+    printf("Estimated value of pi is %f\n", (4* (double)inside_circle) / ((double)points_per_thread * thread_count));
 
     return 0;
 }
